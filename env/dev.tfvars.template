@@ -1,0 +1,24 @@
+# Azure subscription
+subscription_id = "00000000-0000-0000-0000-000000000000"
+
+location = "centralus"
+vm_size  = "Standard_D2s_v3"
+
+admin_username = "azureuser"
+admin_password = "pass123"
+
+# Your public IP in CIDR format
+my_public_ip_cidr = "203.0.113.10/32"
+
+# SSH public key
+ssh_public_key = "ssh-ed25519 AAAA... yourkeycomment"
+
+# Deploy toggles
+deploy_hub_vm    = true
+deploy_spoke_vms = true
+
+# Hub VM public IP
+create_hub_public_ip = true
+
+# Storage account name (must be globally unique)
+storage_account_name = "sthubspokelab123"

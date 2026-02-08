@@ -1,0 +1,47 @@
+# Azure Hub-and-Spoke Terraform Lab ☁️🧱
+
+This repo builds a modular **Hub-and-Spoke network** in Azure using **Terraform**.  
+The focus is on repeatable infrastructure, clean module structure, and real-world troubleshooting (SKU capacity, quota limits, and NSG access paths).
+
+> Note: Some VM access/testing during early iterations used **ClickOps/RDP** (this lab initially started Windows-first). The infrastructure foundation and the final access pattern are managed through Terraform.
+
+---
+
+## ✅ What this deploys
+
+### Networking
+- Hub VNet: `vnet-hub` (workload + private endpoint subnets)
+- Spoke VNets: `vnet-spoke-a`, `vnet-spoke-b`
+- Hub ↔ Spoke VNet peerings
+- Central NSG applied to hub/spoke workload subnets (and NICs as a lab choice)
+
+### Compute
+- Linux VM in hub (optional public IP)
+- Linux VMs in spokes (private only)
+
+### Private connectivity
+- Storage account + Private Endpoint in hub
+- Private DNS integration (module-based)
+
+---
+
+## 🧩 Module-driven design
+
+Root `main.tf` wires together:
+1. Resource groups
+2. Hub network
+3. Spoke networks
+4. NSG + rules (includes dynamic hub subnet lookup for SSH without hardcoded CIDRs)
+5. NSG subnet associations
+6. VMs (hub/spokes)
+7. Optional NSG NIC associations (lab)
+8. Peerings
+9. Storage + Private Endpoint
+
+---
+
+## 🚀 How to run
+
+1. Create a tfvars file:
+   ```bash
+   cp terraform.tfvars.example terraform.tfvars
