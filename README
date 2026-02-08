@@ -1,4 +1,4 @@
-# Azure Hub-and-Spoke Terraform Lab ☁️🧱
+## Azure Hub-and-Spoke Terraform Lab ☁️🧱
 
 This repository provisions a modular **Hub-and-Spoke network architecture** in Microsoft Azure using **Terraform**.
 The focus of this lab is on Infrastructure as Code (IaC), clean module design, and real-world troubleshooting
