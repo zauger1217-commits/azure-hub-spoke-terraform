@@ -1,58 +1,55 @@
-## Azure Hub-and-Spoke Terraform Lab ☁️🧱
+# Azure Hub-and-Spoke Terraform Lab ☁️
 
-This repository provisions a modular **Hub-and-Spoke network architecture** in Microsoft Azure using **Terraform**.
-The focus of this lab is on Infrastructure as Code (IaC), clean module design, and real-world troubleshooting
-around Azure networking, VM deployment, and NSG access paths.
+A modular **Azure hub-and-spoke network** built with **Terraform**, focused on real-world
+networking patterns, security boundaries, and operational troubleshooting.
 
-> Note: Some VM access and validation during early iterations was done using **ClickOps and RDP**
-> (this lab originally started Windows-first). The infrastructure foundation and final access patterns
-> are fully managed through Terraform.
+This project emphasizes **Infrastructure as Code** over VM configuration.
+Some VM access and validation during early iterations was performed using **ClickOps / RDP**.
 
 ---
 
-## 🏗️ Architecture Overview
+## 🧱 Architecture at a Glance
 
-**Core components:**
-- Hub virtual network with workload and private endpoint subnets
-- Two spoke virtual networks with workload subnets
+- Hub virtual network (`vnet-hub`)
+- Two spoke virtual networks
 - Hub ↔ Spoke VNet peering
 - Centralized Network Security Group (NSG)
-- Linux virtual machines (hub + spokes)
+- Linux VMs (hub + spokes)
 - Storage account with Private Endpoint (hub)
 
-The hub VM acts as a **jump point** for private access into spoke VMs.
+The **hub VM acts as a jump point** for private access to spoke workloads.
 
 ---
 
-## 📁 Repository Structure
+## 📂 Repository Structure
 
 ```
-azure-hub-spoke-terraform/
-├─ main.tf
-├─ variables.tf
-├─ outputs.tf
-├─ locals.tf
-├─ providers.tf
-├─ versions.tf
-├─ terraform.tfvars.example
-├─ modules/
-│  ├─ rg/
-│  ├─ network-hub/
-│  ├─ network-spoke/
-│  ├─ nsg/
-│  ├─ nsg-subnet-assoc/
-│  ├─ nsg-nic-assoc/
-│  ├─ vm-linux/
-│  ├─ peering/
-│  └─ private-endpoint-storage/
-└─ docs/
-   ├─ architecture.md
-   └─ troubleshooting.md
+.
+├── main.tf
+├── variables.tf
+├── locals.tf
+├── providers.tf
+├── versions.tf
+├── outputs.tf
+├── terraform.tfvars.example
+├── modules/
+│   ├── rg/
+│   ├── network-hub/
+│   ├── network-spoke/
+│   ├── nsg/
+│   ├── nsg-subnet-assoc/
+│   ├── nsg-nic-assoc/
+│   ├── vm-linux/
+│   ├── peering/
+│   └── private-endpoint-storage/
+└── docs/
+    ├── architecture.md
+    └── troubleshooting.md
 ```
 
 ---
 
-## 🚀 Deployment Steps
+## 🚀 How to Deploy
 
 ### Prerequisites
 - Azure subscription
@@ -60,7 +57,6 @@ azure-hub-spoke-terraform/
 - Terraform installed
 
 ### Deploy
-
 ```bash
 cp terraform.tfvars.example terraform.tfvars
 terraform init
@@ -70,43 +66,54 @@ terraform apply
 ```
 
 ### Destroy
-
 ```bash
 terraform destroy
 ```
 
 ---
 
-## 🔐 Configuration Notes
+## 🔐 Networking & Access Model
 
-- SSH access is restricted using NSG rules:
-  - Public SSH allowed only from `my_public_ip_cidr` (lab convenience)
-  - Hub subnet → Spoke subnet SSH allowed dynamically (no hardcoded CIDRs)
-- Spoke VMs are deployed **without public IPs**
-- VM size is configurable (lab default: `Standard_D2s_v3`)
-
----
-
-## 🧠 Key Lessons Learned
-
-- Azure VM SKUs can fail due to **regional capacity** even when valid
-- Subscription **quota limits** can block entire VM families
-- NSG rules must allow the *correct source* (local IP vs hub subnet vs spoke ranges)
-- Terraform modules should dynamically discover subnet CIDRs instead of hardcoding values
-- Separating network, security, and compute into modules improves maintainability
+- Public SSH allowed **only from your IP** (lab convenience)
+- Spoke VMs have **no public IPs**
+- Hub → Spoke SSH enabled via NSG rules
+- Hub subnet is dynamically discovered (no hardcoded CIDRs)
 
 ---
 
-## 🛠️ Future Improvements
+## 🧠 What This Lab Demonstrates
+
+- Terraform module design and composition
+- Hub-and-spoke Azure networking
+- NSG rule design and source scoping
+- VNet peering and private routing
+- Handling Azure VM SKU capacity and quota limits
+- Separation of network, security, and compute concerns
+
+---
+
+## ⚠️ Real-World Issues Encountered
+
+- VM deployment failures due to **regional SKU capacity**
+- Subscription quota limits blocking VM families
+- Incorrect NSG source ranges blocking access
+- SSH authentication differences between local, hub, and spoke VMs
+
+Details are documented in `docs/troubleshooting.md`.
+
+---
+
+## 🛠️ Possible Improvements
 
 - Replace public SSH with Azure Bastion
-- Add Log Analytics and NSG flow logs
-- Introduce CI validation with GitHub Actions
-- Harden jumpbox access and remove public exposure
+- Add NSG flow logs and Azure Monitor
+- Introduce CI validation (Terraform fmt / validate)
+- Harden jumpbox access
 
 ---
 
-## 📌 Purpose
+## 🎯 Purpose
 
-This lab was built to reinforce **Azure networking fundamentals** and **Terraform module design**
-while reflecting the kinds of troubleshooting scenarios encountered in real cloud operations roles.
+This lab was built to reinforce **Azure networking fundamentals**
+and **Terraform best practices**, while reflecting issues commonly
+encountered in real cloud operations environments.
