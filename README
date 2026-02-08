@@ -1,119 +1,136 @@
 # Azure Hub-and-Spoke Terraform Lab ☁️
 
-A modular **Azure hub-and-spoke network** built with **Terraform**, focused on real-world
-networking patterns, security boundaries, and operational troubleshooting.
-
-This project emphasizes **Infrastructure as Code** over VM configuration.
-Some VM access and validation during early iterations was performed using **ClickOps / RDP**.
+> **Terraform-built Azure hub-and-spoke architecture**
+> focused on networking fundamentals, security boundaries, and real-world troubleshooting.
 
 ---
 
-## 🧱 Architecture at a Glance
+## What This Is
 
-- Hub virtual network (`vnet-hub`)
-- Two spoke virtual networks
+- An **Azure hub-and-spoke network** built with **Terraform**
+- Uses **modules** to separate networking, security, and compute
+- Designed to reflect **real cloud operations patterns**, not toy examples
+
+Some VM access during early iterations used **ClickOps / RDP** while validating networking.
+The infrastructure itself is fully provisioned via Terraform.
+
+---
+
+## Architecture Overview
+
+**Hub**
+- Virtual network: `vnet-hub`
+- Workload subnet + private endpoint subnet
+- Linux VM acting as a **jump host**
+- Storage account with **Private Endpoint**
+
+**Spokes**
+- Two spoke VNets
+- Workload subnets only
+- Linux VMs with **no public IPs**
+
+**Connectivity**
 - Hub ↔ Spoke VNet peering
-- Centralized Network Security Group (NSG)
-- Linux VMs (hub + spokes)
-- Storage account with Private Endpoint (hub)
-
-The **hub VM acts as a jump point** for private access to spoke workloads.
+- Central Network Security Group (NSG)
+- Hub subnet allowed to reach spokes over SSH
 
 ---
 
-## 📂 Repository Structure
+## Repository Layout
 
 ```
 .
-├── main.tf
-├── variables.tf
-├── locals.tf
-├── providers.tf
-├── versions.tf
-├── outputs.tf
-├── terraform.tfvars.example
-├── modules/
-│   ├── rg/
-│   ├── network-hub/
-│   ├── network-spoke/
-│   ├── nsg/
-│   ├── nsg-subnet-assoc/
-│   ├── nsg-nic-assoc/
-│   ├── vm-linux/
-│   ├── peering/
-│   └── private-endpoint-storage/
-└── docs/
-    ├── architecture.md
-    └── troubleshooting.md
+├─ main.tf
+├─ variables.tf
+├─ locals.tf
+├─ providers.tf
+├─ versions.tf
+├─ outputs.tf
+├─ terraform.tfvars.example
+├─ modules/
+│  ├─ rg/
+│  ├─ network-hub/
+│  ├─ network-spoke/
+│  ├─ nsg/
+│  ├─ nsg-subnet-assoc/
+│  ├─ nsg-nic-assoc/
+│  ├─ vm-linux/
+│  ├─ peering/
+│  └─ private-endpoint-storage/
+└─ docs/
+   ├─ architecture.md
+   └─ troubleshooting.md
 ```
 
 ---
 
-## 🚀 How to Deploy
+## How to Deploy
 
 ### Prerequisites
 - Azure subscription
 - Azure CLI authenticated (`az login`)
 - Terraform installed
 
-### Deploy
+### Deploy the Lab
+
 ```bash
 cp terraform.tfvars.example terraform.tfvars
+
 terraform init
-terraform fmt -recursive
 terraform validate
 terraform apply
 ```
 
-### Destroy
+### Tear Down
+
 ```bash
 terraform destroy
 ```
 
 ---
 
-## 🔐 Networking & Access Model
+## Network & Access Model
 
-- Public SSH allowed **only from your IP** (lab convenience)
 - Spoke VMs have **no public IPs**
-- Hub → Spoke SSH enabled via NSG rules
-- Hub subnet is dynamically discovered (no hardcoded CIDRs)
+- Public SSH allowed only from **your IP** (lab convenience)
+- Hub VM provides private access to spokes
+- NSG rules dynamically reference subnet CIDRs (no hardcoding)
 
 ---
 
-## 🧠 What This Lab Demonstrates
+## What This Project Demonstrates
 
-- Terraform module design and composition
-- Hub-and-spoke Azure networking
+- Terraform module composition
+- Azure hub-and-spoke networking
 - NSG rule design and source scoping
-- VNet peering and private routing
-- Handling Azure VM SKU capacity and quota limits
-- Separation of network, security, and compute concerns
+- Private routing and VNet peering
+- Troubleshooting Azure SKU capacity and quotas
+- Practical separation of concerns
 
 ---
 
-## ⚠️ Real-World Issues Encountered
+## Real Issues Encountered
 
-- VM deployment failures due to **regional SKU capacity**
+- VM creation failures due to **regional SKU capacity**
 - Subscription quota limits blocking VM families
-- Incorrect NSG source ranges blocking access
-- SSH authentication differences between local, hub, and spoke VMs
+- Incorrect NSG source prefixes causing timeouts
+- SSH authentication differences between local, hub, and spoke access
 
-Details are documented in `docs/troubleshooting.md`.
+These issues are documented in `docs/troubleshooting.md`.
 
 ---
 
-## 🛠️ Possible Improvements
+## Next Improvements
 
 - Replace public SSH with Azure Bastion
 - Add NSG flow logs and Azure Monitor
 - Introduce CI validation (Terraform fmt / validate)
-- Harden jumpbox access
+- Harden jump host access
 
 ---
 
-## 🎯 Purpose
+## Why This Exists
 
-This lab was built to reinforce **Azure networking fundamentals**
-and **Terraform best practices**, while reflecting issues commonly
-encountered in real cloud operations environments.
+This lab was built to practice **Azure networking fundamentals**
+and **Terraform best practices** while encountering the kinds of
+issues faced in real cloud operations roles.
