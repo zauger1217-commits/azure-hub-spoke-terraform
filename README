@@ -1,47 +1,112 @@
 # Azure Hub-and-Spoke Terraform Lab ☁️🧱
 
-This repo builds a modular **Hub-and-Spoke network** in Azure using **Terraform**.  
-The focus is on repeatable infrastructure, clean module structure, and real-world troubleshooting (SKU capacity, quota limits, and NSG access paths).
+This repository provisions a modular **Hub-and-Spoke network architecture** in Microsoft Azure using **Terraform**.
+The focus of this lab is on Infrastructure as Code (IaC), clean module design, and real-world troubleshooting
+around Azure networking, VM deployment, and NSG access paths.
 
-> Note: Some VM access/testing during early iterations used **ClickOps/RDP** (this lab initially started Windows-first). The infrastructure foundation and the final access pattern are managed through Terraform.
-
----
-
-## ✅ What this deploys
-
-### Networking
-- Hub VNet: `vnet-hub` (workload + private endpoint subnets)
-- Spoke VNets: `vnet-spoke-a`, `vnet-spoke-b`
-- Hub ↔ Spoke VNet peerings
-- Central NSG applied to hub/spoke workload subnets (and NICs as a lab choice)
-
-### Compute
-- Linux VM in hub (optional public IP)
-- Linux VMs in spokes (private only)
-
-### Private connectivity
-- Storage account + Private Endpoint in hub
-- Private DNS integration (module-based)
+> Note: Some VM access and validation during early iterations was done using **ClickOps and RDP**
+> (this lab originally started Windows-first). The infrastructure foundation and final access patterns
+> are fully managed through Terraform.
 
 ---
 
-## 🧩 Module-driven design
+## 🏗️ Architecture Overview
 
-Root `main.tf` wires together:
-1. Resource groups
-2. Hub network
-3. Spoke networks
-4. NSG + rules (includes dynamic hub subnet lookup for SSH without hardcoded CIDRs)
-5. NSG subnet associations
-6. VMs (hub/spokes)
-7. Optional NSG NIC associations (lab)
-8. Peerings
-9. Storage + Private Endpoint
+**Core components:**
+- Hub virtual network with workload and private endpoint subnets
+- Two spoke virtual networks with workload subnets
+- Hub ↔ Spoke VNet peering
+- Centralized Network Security Group (NSG)
+- Linux virtual machines (hub + spokes)
+- Storage account with Private Endpoint (hub)
+
+The hub VM acts as a **jump point** for private access into spoke VMs.
 
 ---
 
-## 🚀 How to run
+## 📁 Repository Structure
 
-1. Create a tfvars file:
-   ```bash
-   cp terraform.tfvars.example terraform.tfvars
+```
+azure-hub-spoke-terraform/
+├─ main.tf
+├─ variables.tf
+├─ outputs.tf
+├─ locals.tf
+├─ providers.tf
+├─ versions.tf
+├─ terraform.tfvars.example
+├─ modules/
+│  ├─ rg/
+│  ├─ network-hub/
+│  ├─ network-spoke/
+│  ├─ nsg/
+│  ├─ nsg-subnet-assoc/
+│  ├─ nsg-nic-assoc/
+│  ├─ vm-linux/
+│  ├─ peering/
+│  └─ private-endpoint-storage/
+└─ docs/
+   ├─ architecture.md
+   └─ troubleshooting.md
+```
+
+---
+
+## 🚀 Deployment Steps
+
+### Prerequisites
+- Azure subscription
+- Azure CLI authenticated (`az login`)
+- Terraform installed
+
+### Deploy
+
+```bash
+cp terraform.tfvars.example terraform.tfvars
+terraform init
+terraform fmt -recursive
+terraform validate
+terraform apply
+```
+
+### Destroy
+
+```bash
+terraform destroy
+```
+
+---
+
+## 🔐 Configuration Notes
+
+- SSH access is restricted using NSG rules:
+  - Public SSH allowed only from `my_public_ip_cidr` (lab convenience)
+  - Hub subnet → Spoke subnet SSH allowed dynamically (no hardcoded CIDRs)
+- Spoke VMs are deployed **without public IPs**
+- VM size is configurable (lab default: `Standard_D2s_v3`)
+
+---
+
+## 🧠 Key Lessons Learned
+
+- Azure VM SKUs can fail due to **regional capacity** even when valid
+- Subscription **quota limits** can block entire VM families
+- NSG rules must allow the *correct source* (local IP vs hub subnet vs spoke ranges)
+- Terraform modules should dynamically discover subnet CIDRs instead of hardcoding values
+- Separating network, security, and compute into modules improves maintainability
+
+---
+
+## 🛠️ Future Improvements
+
+- Replace public SSH with Azure Bastion
+- Add Log Analytics and NSG flow logs
+- Introduce CI validation with GitHub Actions
+- Harden jumpbox access and remove public exposure
+
+---
+
+## 📌 Purpose
+
+This lab was built to reinforce **Azure networking fundamentals** and **Terraform module design**
+while reflecting the kinds of troubleshooting scenarios encountered in real cloud operations roles.
